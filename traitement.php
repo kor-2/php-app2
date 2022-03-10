@@ -2,10 +2,10 @@
 
 session_start();
 
-$pseudo = filter_input(INPUT_POST, 'pseudo', FILTER_SANITIZE_STRING);
+$pseudo = filter_input(INPUT_POST, 'pseudo', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
 $email = filter_input(INPUT_POST, 'email', FILTER_VALIDATE_EMAIL);
-$pass = filter_input(INPUT_POST, 'mdp', FILTER_SANITIZE_STRING);
-$confPass = filter_input(INPUT_POST, 'mdp-conf', FILTER_SANITIZE_STRING);
+$pass = filter_input(INPUT_POST, 'mdp', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+$confPass = filter_input(INPUT_POST, 'mdp-conf', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
 $hash = password_hash($pass, PASSWORD_DEFAULT);
 
 $action = $_GET['action'];
@@ -25,16 +25,12 @@ switch ($action) {
         break;
 }
 
-
-
 function register($pseudo, $email, $pass, $confPass, $hash)
 {
-
     if (isset($_SESSION['users'])) {
         $searchEmail = array_search($email, array_column($_SESSION['users'], 'email'));
 
         if (count($_SESSION['users']) !== 0 && $searchEmail !== false) {
-
             $emailConf = false;
         } else {
             $emailConf = true;
@@ -42,7 +38,6 @@ function register($pseudo, $email, $pass, $confPass, $hash)
     } else {
         $emailConf = true;
     }
-
 
     if ($pass !== $confPass) {
         $validPass = false;
@@ -54,13 +49,13 @@ function register($pseudo, $email, $pass, $confPass, $hash)
         $user = [
             'pseudo' => $pseudo,
             'email' => $email,
-            'pass' => $hash
+            'pass' => $hash,
         ];
         $_SESSION['users'][] = $user;
         $_SESSION['error'][0] = '<p class="success">Utilisateur enregistré</p>';
-        header("Location: login.php");
+        header('Location: login.php');
         die;
-        //////////////////////Tableau erreur/////////////////////
+    //////////////////////Tableau erreur/////////////////////
     } elseif (!$pseudo) {
         $_SESSION['error'][0] = '<p class="error">Pseudo invalide</p>';
     } elseif (!$emailConf) {
@@ -76,13 +71,9 @@ function register($pseudo, $email, $pass, $confPass, $hash)
     return;
 }
 
-
 function login($email, $pass)
 {
-
-
     $searchEmail = array_search($email, array_column($_SESSION['users'], 'email'));
-
 
     if ($searchEmail !== false) {
         if (password_verify($pass, $_SESSION['users'][$searchEmail]['pass'])) {
@@ -99,5 +90,6 @@ function login($email, $pass)
         header('Location:login.php');
         die;
     }
+
     return;
 }
